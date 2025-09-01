@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데일리 챌린지</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg-color: #ffffff;
+            --text-color: #333;
+            --subtext-color: #555;
+            --border-color: #e0e0e0;
+            --primary-color: #4a90e2;
+            --accent-red: #e74c3c;
+            --accent-green: #2ecc71;
+            --font-family: 'Pretendard', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin: 0 0 4px;
+            color: var(--text-color);
+        }
+
+        .header #current-date {
+            font-size: 16px;
+            color: var(--subtext-color);
+        }
+
+        #calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+
+        #calendar div {
+            padding: 4px;
+            border-radius: 8px;
+            font-size: 14px;
+            position: relative;
+        }
+
+        #calendar .day-name {
+            font-weight: 700;
+            color: var(--subtext-color);
+            font-size: 12px;
+        }
+
+        #calendar .day {
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 38px;
+        }
+        
+        #calendar .day:not(.empty):hover {
+            background-color: #e9ecef;
+        }
+
+        #calendar .day.selected {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            font-weight: 700;
+        }
+        
+        #calendar .day.today .date-num {
+            background-color: #333;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #calendar .day.selected .date-num {
+            background-color: transparent;
+        }
+
+        #calendar .day .score {
+            font-size: 10px;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .score-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        #score-display {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 42px;
+            font-weight: 700;
+            color: #fff;
+            transition: background-color 0.5s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .score-section h2 {
+            font-size: 20px;
+            text-align: center;
+            margin: 0;
+        }
+
+        .checklist-section h3 {
+            font-size: 18px;
+            margin: 0 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .score-down-title { color: var(--accent-red); }
+        .score-up-title { color: var(--accent-green); }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background-color 0.2s;
+            background-color: #f8f9fa;
+        }
+
+        .checklist-item.checked {
+            background-color: #e9ecef;
+            opacity: 0.7;
+        }
+        
+        .checklist-item.checked label span {
+            text-decoration: line-through;
+            color: var(--subtext-color);
+        }
+
+        .checklist-item label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            flex-grow: 1;
+            font-size: 15px;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: #fff;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.15em;
+            height: 1.15em;
+            border: 0.15em solid #ccc;
+            border-radius: 0.25em;
+            transform: translateY(-0.075em);
+            display: grid;
+            place-content: center;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+        
+        .checklist-item input[type="checkbox"]::before {
+            content: "";
+            width: 0.65em;
+            height: 0.65em;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em var(--primary-color);
+            transform-origin: bottom left;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+
+        .checklist-item input[type="checkbox"]:checked::before {
+            transform: scale(1);
+        }
+        
+        .checklist-item input[type="checkbox"]:checked {
+            border-color: var(--primary-color);
+        }
+
+        .checklist-item .points {
+            font-weight: 700;
+            font-size: 16px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            color: white;
+        }
+        
+        .points.negative { background-color: var(--accent-red); }
+        .points.positive { background-color: var(--accent-green); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card header">
+            <h1>데일리 챌린지</h1>
+            <p id="current-date"></p>
+        </div>
+        
+        <div class="card">
+            <div id="calendar"></div>
+        </div>
+        
+        <div class="card score-section">
+             <div id="score-display">27</div>
+             <h2>오늘의 체크리스트</h2>
+        </div>
+        
+        <div class="card checklist-section">
+            <h3 class="score-down-title">👎 SCORE DOWN</h3>
+            <div id="score-down-list"></div>
+        </div>
+
+        <div class="card checklist-section">
+            <h3 class="score-up-title">👍 SCORE UP</h3>
+            <div id="score-up-list"></div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // (자바스크립트 코드는 이전과 동일합니다. 여기에 그대로 붙여넣어주세요)
+        // For brevity in this response, the JS is omitted, but it is the same as the previous correct version.
+        // I will re-insert the full javascript here.
+            const checklistData = {
+                scoreDown: [
+                    { text: '유튜브', points: -7 },
+                    { text: '게임', points: -6 },
+                    { text: '음란물', points: -6 },
+                    { text: '커뮤니티', points: -4 },
+                    { text: '당분 음료', points: -4 },
+                ],
+                scoreUp: [
+                    { text: '운동', points: 6 },
+                    { text: '12시 이전 수면', points: 6 },
+                    { text: '7시 이전 기상', points: 6 },
+                    { text: 'TickTick 당일 계획 전부 수행', points: 4 },
+                    { text: '매일 일기 적기', points: 3 },
+                    { text: '감정 적기', points: 3 },
+                    { text: '하굣길 공부', points: 3 },
+                    { text: '야식 먹지않기', points: 2 },
+                    { text: '등굣길 공부', points: 2 },
+                    { text: '찬물샤워', points: 2 },
+                    { text: '호흡 명상', points: 2 },
+                    { text: '전날 계획 세우기', points: 2 },
+                    { text: '피부관리 루틴', points: 2 },
+                    { text: '잠들기 전 독서', points: 2 },
+                    { text: '구강 위생', points: 2 },
+                    { text: '아침 천천히 씹기', points: 1 },
+                    { text: '점심 천천히 씹기', points: 1 },
+                    { text: '저녁 천천히 씹기', points: 1 },
+                ]
+            };
+
+            const scoreDisplay = document.getElementById('score-display');
+            const scoreDownList = document.getElementById('score-down-list');
+            const scoreUpList = document.getElementById('score-up-list');
+            const currentDateEl = document.getElementById('current-date');
+            const calendarEl = document.getElementById('calendar');
+            
+            let today = new Date();
+            let selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+            function formatDate(date) {
+                return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+            }
+            
+            function getDateString(date) {
+                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+
+            function loadChecklistItems() {
+                scoreDownList.innerHTML = '';
+                scoreUpList.innerHTML = '';
+                
+                const dateString = getDateString(selectedDate);
+                const data = getStoredData(dateString);
+
+                checklistData.scoreDown.forEach((item, index) => {
+                    const isChecked = data.scoreDown[index] || false;
+                    scoreDownList.appendChild(createChecklistItem(item, index, 'down', isChecked));
+                });
+
+                checklistData.scoreUp.forEach((item, index) => {
+                    const isChecked = data.scoreUp[index] || false;
+                    scoreUpList.appendChild(createChecklistItem(item, index, 'up', isChecked));
+                });
+                
+                updateScore();
+                renderCalendar();
+            }
+
+            function createChecklistItem(item, index, type, isChecked) {
+                const div = document.createElement('div');
+                div.className = 'checklist-item';
+                if (isChecked) div.classList.add('checked');
+
+                const pointsClass = type === 'down' ? 'negative' : 'positive';
+                const pointsPrefix = type === 'down' ? '' : '+';
+
+                div.innerHTML = `
+                    <label>
+                        <input type="checkbox" data-points="${item.points}" data-type="${type}" data-index="${index}" ${isChecked ? 'checked' : ''}>
+                        <span>${item.text}</span>
+                    </label>
+                    <span class="points ${pointsClass}">${pointsPrefix}${item.points}</span>
+                `;
+                
+                const checkbox = div.querySelector('input[type="checkbox"]');
+                checkbox.addEventListener('change', () => {
+                    div.classList.toggle('checked', checkbox.checked);
+                    updateScore();
+                });
+
+                return div;
+            }
+            
+            function getStoredData(dateString) {
+                const storedData = localStorage.getItem(dateString);
+                if (storedData) {
+                    return JSON.parse(storedData);
+                }
+                return {
+                    score: 27,
+                    scoreDown: Array(checklistData.scoreDown.length).fill(false),
+                    scoreUp: Array(checklistData.scoreUp.length).fill(false)
+                };
+            }
+
+            function updateScore() {
+                let score = 27;
+                const scoreDownStates = [];
+                const scoreUpStates = [];
+
+                document.querySelectorAll('#score-down-list input[type="checkbox"]').forEach((checkbox, index) => {
+                    const isChecked = checkbox.checked;
+                    scoreDownStates[index] = isChecked;
+                    if (isChecked) {
+                        score += parseInt(checkbox.dataset.points);
+                    }
+                });
+
+                document.querySelectorAll('#score-up-list input[type="checkbox"]').forEach((checkbox, index) => {
+                    const isChecked = checkbox.checked;
+                    scoreUpStates[index] = isChecked;
+                    if (isChecked) {
+                        score += parseInt(checkbox.dataset.points);
+                    }
+                });
+
+                scoreDisplay.textContent = score;
+                updateScoreColor(score);
+                
+                const dateString = getDateString(selectedDate);
+                const dataToStore = {
+                    score: score,
+                    scoreDown: scoreDownStates,
+                    scoreUp: scoreUpStates
+                };
+                localStorage.setItem(dateString, JSON.stringify(dataToStore));
+                
+                const calendarDay = document.querySelector(`.day[data-date='${dateString}'] .score`);
+                if (calendarDay) {
+                    calendarDay.textContent = score;
+                    const dayCell = calendarDay.parentElement;
+                    const data = getStoredData(dateString);
+                    if (data.score !== 27 || data.scoreDown.some(s => s) || data.scoreUp.some(s => s)) {
+                         dayCell.style.color = getScoreColor(score);
+                    } else {
+                         dayCell.style.color = 'var(--text-color)';
+                    }
+                }
+            }
+            
+            function getScoreColor(score) {
+                const percentage = Math.max(0, Math.min(100, score)) / 100;
+                const hue = percentage * 120;
+                return `hsl(${hue}, 70%, 45%)`;
+            }
+
+            function updateScoreColor(score) {
+                scoreDisplay.style.backgroundColor = getScoreColor(score);
+            }
+
+            function renderCalendar() {
+                calendarEl.innerHTML = '';
+                const year = selectedDate.getFullYear();
+                const month = selectedDate.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const firstDayOfMonth = new Date(year, month, 1).getDay();
+
+                const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+                dayNames.forEach(name => {
+                    const dayNameEl = document.createElement('div');
+                    dayNameEl.className = 'day-name';
+                    dayNameEl.textContent = name;
+                    calendarEl.appendChild(dayNameEl);
+                });
+
+                for (let i = 0; i < firstDayOfMonth; i++) {
+                    const emptyEl = document.createElement('div');
+                    emptyEl.className = 'empty';
+                    calendarEl.appendChild(emptyEl);
+                }
+
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dayEl = document.createElement('div');
+                    const dayDate = new Date(year, month, i);
+                    const dateString = getDateString(dayDate);
+                    
+                    dayEl.className = 'day';
+                    dayEl.dataset.date = dateString;
+                    dayEl.innerHTML = `<span class="date-num">${i}</span><span class="score"></span>`;
+                    
+                    if (dateString === getDateString(selectedDate)) {
+                        dayEl.classList.add('selected');
+                    }
+                    if (dateString === getDateString(new Date())) {
+                        dayEl.classList.add('today');
+                    }
+                    
+                    const storedData = getStoredData(dateString);
+                    const scoreEl = dayEl.querySelector('.score');
+                    scoreEl.textContent = storedData.score;
+
+                    if (storedData.score !== 27 || storedData.scoreDown.some(s=>s) || storedData.scoreUp.some(s=>s)) {
+                        scoreEl.style.color = getScoreColor(storedData.score);
+                    }
+                
+                    dayEl.addEventListener('click', () => {
+                        selectedDate = dayDate;
+                        currentDateEl.textContent = formatDate(selectedDate);
+                        loadChecklistItems();
+                    });
+                    
+                    calendarEl.appendChild(dayEl);
+                }
+            }
+
+            function initializeApp() {
+                currentDateEl.textContent = formatDate(selectedDate);
+                loadChecklistItems();
+            }
+
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
