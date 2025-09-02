@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700&display=swap');
+
+:root {
+    --bg-color: #f0f4f8;
+    --card-bg-color: #ffffff;
+    --text-color: #333;
+    --subtext-color: #555;
+    --border-color: #e0e0e0;
+    --primary-color: #4a90e2; 
+    --accent-red: #e74c3c; 
+    --accent-green: #2ecc71;
+    --accent-blue: #3498db; 
+    --font-family: 'Pretendard', sans-serif;
+}
+
+body { 
+    font-family: var(--font-family); 
+    background-color: var(--bg-color); 
+    color: var(--text-color); 
+    margin: 0; 
+    padding: 20px; 
+    display: flex; 
+    justify-content: center; 
+}
+
+.container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 20px; }
+.card { background-color: var(--card-bg-color); border-radius: 16px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+.header { text-align: center; }
+.header #current-date { font-size: 16px; color: var(--subtext-color); margin-top: 0; }
+
+.month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.month-nav h1 { font-size: 24px; margin: 0; }
+.month-nav button { background: none; border: 1px solid var(--border-color); border-radius: 8px; width: 36px; height: 36px; font-size: 20px; cursor: pointer; color: var(--subtext-color); transition: background-color 0.2s; }
+.month-nav button:hover { background-color: #f0f4f8; }
+
+#calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
+#calendar div { padding: 4px; border-radius: 8px; font-size: 14px; position: relative; }
+#calendar .day-name { font-weight: 700; color: var(--subtext-color); font-size: 12px; }
+#calendar .day { cursor: pointer; transition: background-color 0.2s, color 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 38px; }
+#calendar .day:not(.empty):hover { background-color: #e9ecef; }
+#calendar .day.selected { background-color: var(--primary-color) !important; color: white !important; font-weight: 700; }
+#calendar .day.today .date-num { background-color: #333; color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; }
+#calendar .day.selected .date-num { background-color: transparent; }
+#calendar .day .score { font-size: 10px; font-weight: 700; margin-top: 2px; }
+
+.score-section { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+#score-display { width: 120px; height: 120px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 42px; font-weight: 700; color: #fff; transition: background-color 0.5s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.score-section h2 { font-size: 20px; text-align: center; margin: 0; }
+
+.category-card h3 { font-size: 18px; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; }
+
+.horizontal-blocks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.block-item { display: flex; }
+.block-item input[type="checkbox"] { display: none; }
+.block-item label { cursor: pointer; padding: 8px; border: 2px solid var(--border-color); border-radius: 12px; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: all 0.2s ease; box-sizing: border-box; min-height: 60px; }
+.block-item .item-text { font-size: 13px; font-weight: 700; text-align: center; word-break: keep-all; }
+.block-item .item-points { font-size: 12px; font-weight: 700; border-radius: 6px; color: white; padding: 1px 6px; margin-top: 5px; }
+.points-positive { background-color: var(--accent-green); }
+.points-negative { background-color: var(--accent-red); }
+.block-item input[type="checkbox"]:checked + label { border-color: var(--primary-color); background-color: #f0f8ff; }
+.block-item input[type="checkbox"]:checked + label .item-text { color: var(--primary-color); }
+
+#exercise-main-button { width: 100%; padding: 12px; font-size: 16px; font-weight: 700; border-radius: 12px; border: 2px solid var(--border-color); background-color: transparent; color: var(--text-color); cursor: pointer; transition: all 0.2s ease; }
+#exercise-main-button.checked { border-color: var(--accent-green); background-color: rgba(46, 204, 113, 0.1); color: var(--accent-green); }
+#exercise-choices { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }
+#exercise-choices.visible { display: grid; }
+#exercise-choices button { padding: 10px; font-size: 14px; font-weight: 700; border-radius: 8px; border: 1px solid var(--border-color); background-color: transparent; color: var(--subtext-color); cursor: pointer; transition: all 0.2s ease; }
+#exercise-choices button.selected { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+.checklist-item { display: flex; align-items: center; padding: 10px; border-radius: 8px; margin-bottom: 8px; transition: background-color 0.2s; background-color: #f8f9fa; }
+.checklist-item.checked { background-color: #e9ecef; opacity: 0.7; }
+.checklist-item.checked label span { text-decoration: line-through; color: var(--subtext-color); }
+.checklist-item label { display: flex; align-items: center; cursor: pointer; flex-grow: 1; font-size: 15px; }
+.checklist-item input[type="checkbox"] { -webkit-appearance: none; appearance: none; background-color: #fff; margin: 0 12px 0 0; width: 1.15em; height: 1.15em; border: 0.15em solid #ccc; border-radius: 0.25em; transform: translateY(-0.075em); display: grid; place-content: center; cursor: pointer; }
+.checklist-item input[type="checkbox"]::before { content: ""; width: 0.65em; height: 0.65em; transform: scale(0); transition: 120ms transform ease-in-out; box-shadow: inset 1em 1em var(--primary-color); transform-origin: bottom left; clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
+.checklist-item input[type="checkbox"]:checked::before { transform: scale(1); }
+.checklist-item input[type="checkbox"]:checked { border-color: var(--primary-color); }
+.checklist-item .points { font-weight: 700; font-size: 16px; padding: 2px 8px; border-radius: 6px; color: white; }
+
+.study-slider-container { display: flex; flex-direction: column; align-items: center; gap: 15px; padding-top: 10px; }
+#study-slider { width: 100%; -webkit-appearance: none; appearance: none; height: 8px; background: #ddd; border-radius: 5px; outline: none; transition: opacity .2s; }
+#study-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; background: var(--accent-blue); border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+#study-slider::-moz-range-thumb { width: 24px; height: 24px; background: var(--accent-blue); border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.slider-output { font-size: 16px; font-weight: 700; color: var(--subtext-color); width: 100%; text-align: center; }
+#study-hours-display { color: var(--accent-blue); font-size: 18px; }
+#study-points-display { color: #fff; background-color: var(--accent-blue); padding: 2px 8px; border-radius: 6px; font-size: 16px; }
+
+/* 일기장 모달 스타일 */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content { background-color: var(--card-bg-color); padding: 24px; border-radius: 16px; width: 90%; max-width: 380px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 16px; }
+.modal-content h3 { margin: 0; font-size: 20px; text-align: center; }
+.modal-content textarea { width: 100%; min-height: 120px; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; font-size: 15px; font-family: var(--font-family); resize: vertical; box-sizing: border-box; }
+.modal-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-buttons button { padding: 12px; border-radius: 8px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; }
+#cancel-journal { background-color: #f0f0f0; color: var(--subtext-color); }
+#save-journal { background-color: var(--primary-color); color: white; }
