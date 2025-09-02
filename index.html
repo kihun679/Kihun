@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>데일리 챌린지</title>
+    <title>데일리 스코어링</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,9 +20,21 @@
         <div class="card">
             <div id="calendar"></div>
         </div>
+
         <div class="card score-section">
-            <div id="score-display">29</div>
-            <h2>오늘의 점수</h2>
+            <div class="score-display-wrapper">
+                <div id="score-display">29</div>
+                <h2>오늘의 점수</h2>
+            </div>
+            <div class="score-analytics">
+                <div class="analytics-text">
+                    <p id="monthly-avg-comp">이번 달 평균: 계산 중...</p>
+                    <p id="weekly-avg-comp">지난주 평균: 계산 중...</p>
+                </div>
+                <div class="analytics-chart-container">
+                    <canvas id="score-chart"></canvas>
+                </div>
+            </div>
         </div>
         
         <div class="card category-card" id="health-card"></div>
@@ -29,17 +42,11 @@
         <div class="card category-card" id="dopamine-card"></div>
         <div class="card category-card" id="study-card"></div>
         <div class="card category-card" id="routine-card"></div>
-    </div>
 
-    <div id="journal-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>📝 일기 기록</h3>
-            <textarea id="journal-memo" placeholder="오늘의 생각이나 감정을 기록하세요."></textarea>
-            <div class="modal-buttons">
-                <button id="cancel-journal">취소</button>
-                <button id="save-journal">저장</button>
-            </div>
-        </div>
+        <footer>
+            <p class="app-title">데일리 스코어링</p>
+            <p class="watermark">made by Eugenekihun Kim</p>
+        </footer>
     </div>
 
     <script src="script.js"></script>

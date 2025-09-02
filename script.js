@@ -1,187 +1,159 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. 상수 및 데이터 정의
     const STARTING_SCORE = 29;
     const checklistData = {
-        health: { title: "건강", items: [ { id: 'eat_breakfast', text: '아침식사', points: 1 }, { id: 'eat_lunch', text: '점심식사', points: 1 }, { id: 'eat_dinner', text: '저녁식사', points: 1 }, { id: 'late_snack', text: '야식', points: -2 }, { id: 'sugar_drink', text: '당분음료', points: -5 }, { id: 'sleep_before_12', text: '전날 12시 이전 수면', points: 6 }, { id: 'wakeup_before_7', text: '7시 이전 기상', points: 6 }, ] },
+        health: { title: "건강", items: [ { id: 'eat_breakfast', text: '아침식사', points: 1 }, { id: 'eat_lunch', text: '점심식사', points: 1 }, { id: 'eat_dinner', text: '저녁식사', points: 1 }, { id: 'late_snack', text: '야식', points: -2 }, { id: 'sugar_drink', text: '당분음료', points: -5 }, { id: 'sleep_before_12', text: '전날 12시 이전 수면', points: 6 }, { id: 'wakeup_before_7', text: '7시 이전 기상', points: 6 } ] },
         dopamine: { title: "도파민 디톡스", items: [ { id: 'no_youtube', text: '유튜브', points: -6 }, { id: 'no_game', text: '게임', points: -6 }, { id: 'no_harmful', text: '유해물', points: -6 }, { id: 'no_community', text: '커뮤니티', points: -4 }, { id: 'cold_shower', text: '찬물샤워', points: 2 } ] },
-        study: { title: "공부", items: [ { id: 'study_commute_am', text: '등굣길 공부', points: 2 }, { id: 'study_commute_pm', text: '하굣길 공부', points: 2 } ], slider: { min: 0, max: 8, points: [0, 3, 3, 3, 3, 3, 3, 3, 3] } },
-        routines: { title: "데일리 루틴", items: [ { id: 'ticktick_clear', text: 'TickTick 당일 계획 전부 수행', points: 4 }, { id: 'emotion_journal', text: '감정 적기', points: 3 }, { id: 'meditation', text: '호흡 명상', points: 2 }, { id: 'plan_tomorrow', text: '전날 계획 세우기', points: 2 }, { id: 'skin_care', text: '피부관리 루틴', points: 2 }, { id: 'read_before_sleep', text: '잠들기 전 독서', points: 2 }, { id: 'oral_hygiene', text: '구강 위생', points: 2 } ] }
+        study: { title: "공부", items: [ { id: 'study_commute_am', text: '등굣길 공부', points: 2 }, { id: 'study_commute_pm', text: '하굣길 공부', points: 2 } ] },
+        routines: { title: "데일리 루틴", items: [ { id: 'ticktick_clear', text: 'TickTick 당일 전부 수행', points: 4 }, { id: 'emotion_journal', text: '감정 적기', points: 3 }, { id: 'meditation', text: '호흡 명상', points: 2 }, { id: 'plan_tomorrow', text: '전날 계획 세우기', points: 2 }, { id: 'skin_care', text: '피부관리 루틴', points: 2 }, { id: 'read_before_sleep', text: '잠들기 전 독서', points: 2 }, { id: 'oral_hygiene', text: '구강 위생', points: 2 } ] }
     };
 
-    // 2. DOM 요소 및 상태 변수
     const scoreDisplay = document.getElementById('score-display');
     const currentDateEl = document.getElementById('current-date');
     const calendarEl = document.getElementById('calendar');
     const monthYearDisplay = document.getElementById('month-year-display');
-    const journalModal = document.getElementById('journal-modal');
-    const journalMemo = document.getElementById('journal-memo');
     
     let today = new Date();
     let selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     let displayDate = new Date(selectedDate);
+    let scoreChart = null; 
+
+    function getScoreColor(score) {
+        const p = Math.max(0, Math.min(100, score)) / 100;
+        return `hsl(${p * 120}, 55%, 48%)`;
+    }
     
-    // 3. 헬퍼 및 유틸리티 함수
-    function getScoreColor(score) { const p = Math.max(0,Math.min(100,score))/100; return `hsl(${p*120}, 70%, 45%)`; }
     function updateScoreColor(score) { scoreDisplay.style.backgroundColor = getScoreColor(score); }
     function formatDate(d) { return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`; }
     function getDateString(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
     function formatMonthYear(d) { return `${d.getFullYear()}년 ${d.getMonth() + 1}월`; }
 
-    function openJournalModal() {
-        const data = getStoredData(getDateString(selectedDate));
-        journalMemo.value = data.journalMemo || '';
-        journalModal.style.display = 'flex';
-    }
-
-    function closeJournalModal() {
-        journalModal.style.display = 'none';
-    }
-
-    // 4. 데이터 관리 함수
     function getStoredData(dateString) {
         const stored = localStorage.getItem(dateString);
         if (stored) return JSON.parse(stored);
-
         const initialData = { 
-            score: STARTING_SCORE, studyHours: 0, checkedItems: {},
-            exerciseChecked: false, exerciseChoices: [], journalMemo: '' 
+            score: STARTING_SCORE, checkedItems: {},
+            exerciseChecked: false, exerciseChoices: [], journalMemo: '',
+            studyHours: 0
         };
         Object.keys(checklistData).forEach(catKey => {
             checklistData[catKey].items?.forEach(item => initialData.checkedItems[item.id] = false);
         });
-        initialData.checkedItems['daily_journal'] = false; // 일기 항목 초기화
+        initialData.checkedItems['daily_journal'] = false;
         return initialData;
     }
 
     function loadStateForDate(dateString) {
         const data = getStoredData(dateString);
-        
         Object.keys(data.checkedItems).forEach(id => {
             const checkbox = document.getElementById(id);
-            if (checkbox) {
-                checkbox.checked = data.checkedItems[id];
-                const parentItem = checkbox.closest('.checklist-item');
-                if(parentItem) parentItem.classList.toggle('checked', checkbox.checked);
-            }
+            if (checkbox) checkbox.checked = data.checkedItems[id];
         });
         
         const mainExerciseBtn = document.getElementById('exercise-main-button');
         const choicesContainer = document.getElementById('exercise-choices');
         mainExerciseBtn.classList.toggle('checked', data.exerciseChecked);
         choicesContainer.classList.toggle('visible', data.exerciseChecked);
-
         choicesContainer.querySelectorAll('button').forEach(btn => {
             btn.classList.toggle('selected', data.exerciseChoices && data.exerciseChoices.includes(btn.dataset.part));
         });
 
-        const slider = document.getElementById('study-slider');
-        slider.value = data.studyHours || 0;
-        slider.dispatchEvent(new Event('input'));
-        
+        const journalButton = document.getElementById('journal-toggle-button');
+        const journalTextarea = document.getElementById('journal-textarea');
+        if(journalButton) {
+            journalButton.classList.toggle('checked', data.checkedItems.daily_journal);
+            journalTextarea.style.display = data.checkedItems.daily_journal ? 'block' : 'none';
+            journalTextarea.value = data.journalMemo || '';
+        }
+
+        const studySlider = document.getElementById('study-slider');
+        const studyHours = data.studyHours || 0;
+        studySlider.value = studyHours * 2; // 시간 값을 슬라이더 값(0.5시간 단위)으로 변환
+        updateStudySliderDisplay(studyHours);
+
         updateScore();
     }
-
+    
     function updateScore() {
         let score = STARTING_SCORE;
         const data = getStoredData(getDateString(selectedDate));
-        const checkedItems = data.checkedItems || {};
-
-        document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-            if (cb.checked) { score += parseInt(cb.dataset.points); }
-        });
-
-        if(data.exerciseChecked){ score += 6; }
-
-        const studyHours = data.studyHours || 0;
-        let currentStudyPoints = 0;
-        for (let i = 1; i <= studyHours; i++) {
-            currentStudyPoints += checklistData.study.slider.points[i];
-        }
-        score += currentStudyPoints;
         
+        Object.keys(data.checkedItems).forEach(id => {
+            if (data.checkedItems[id]) {
+                const allItems = [].concat(...Object.values(checklistData).map(c => c.items || []));
+                const item = allItems.find(i => i.id === id);
+                if (item) score += item.points;
+            }
+        });
+        
+        if (data.checkedItems.daily_journal) score += 3;
+        if (data.exerciseChecked) score += 6;
+        if (data.studyHours) score += data.studyHours * 3; // 시간당 3점
+
+        score = Math.round(score);
         scoreDisplay.textContent = score;
         updateScoreColor(score);
-        
         data.score = score;
         localStorage.setItem(getDateString(selectedDate), JSON.stringify(data));
-        
         renderCalendarScores();
+        updateAnalytics();
     }
 
-    // 5. UI 렌더링 함수
-    function createElements() {
-        const healthCard = document.getElementById('health-card');
-        healthCard.innerHTML = `<h3>${checklistData.health.title}</h3><div class="horizontal-blocks">${ checklistData.health.items.map(item => `<div class="block-item"><input type="checkbox" id="${item.id}" data-points="${item.points}"><label for="${item.id}"><span class="item-text">${item.text}</span><span class="item-points ${item.points > 0 ? 'points-positive':'points-negative'}">${item.points > 0 ? '+' : ''}${item.points}</span></label></div>`).join('') }</div>`;
+    function createBlockItemHTML(item, isFullWidth = false) {
+        const pointClass = item.points > 0 ? 'points-positive' : 'points-negative';
+        const sign = item.points > 0 ? '+' : '';
+        const blockClass = isFullWidth ? 'block-item full-width' : 'block-item';
 
+        return `<div class="${blockClass}">
+            <input type="checkbox" id="${item.id}" data-points="${item.points}">
+            <label for="${item.id}">
+                <span class="item-text">${item.text}</span>
+                <span class="item-points ${pointClass}">${sign}${item.points}</span>
+            </label>
+        </div>`;
+    }
+
+    function createElements() {
+        document.getElementById('health-card').innerHTML = `<h3>건강</h3><div class="horizontal-blocks">${checklistData.health.items.map(item => createBlockItemHTML(item)).join('')}</div>`;
+        
         const exerciseCard = document.getElementById('exercise-card');
         const exerciseParts = ['등', '어깨', '가슴', '이두', '삼두', '전신', '하체'];
         exerciseCard.innerHTML = `<h3>운동 (+6)</h3> <button id="exercise-main-button">오늘 운동을 기록하려면 클릭</button> <div id="exercise-choices"> ${exerciseParts.map(part => `<button data-part="${part}">${part}</button>`).join('')} </div>`;
+        
+        document.getElementById('dopamine-card').innerHTML = `<h3>도파민 디톡스</h3><div class="horizontal-blocks">${checklistData.dopamine.items.map(item => createBlockItemHTML(item)).join('')}</div>`;
 
-        const dopamineCard = document.getElementById('dopamine-card');
-        dopamineCard.innerHTML = `<h3>${checklistData.dopamine.title}</h3><div class="horizontal-blocks">${ checklistData.dopamine.items.map(item => `<div class="block-item"><input type="checkbox" id="${item.id}" data-points="${item.points}"><label for="${item.id}"><span class="item-text">${item.text}</span><span class="item-points ${item.points > 0 ? 'points-positive':'points-negative'}">${item.points > 0 ? '+' : ''}${item.points}</span></label></div>`).join('') }</div>`;
+        const studyItemsHTML = checklistData.study.items.map(item => createBlockItemHTML(item, true)).join('');
+        document.getElementById('study-card').innerHTML = `<h3>공부</h3>
+            <div class="horizontal-blocks">${studyItemsHTML}</div>
+            <div class="study-slider-container">
+                <input type="range" id="study-slider" min="0" max="16" value="0" step="1">
+                <div class="slider-output">
+                    <span id="study-hours-display">0 시간</span> / <span id="study-points-display">+0</span>
+                </div>
+            </div>`;
 
-        const studyCard = document.getElementById('study-card');
-        studyCard.innerHTML = `<h3>${checklistData.study.title}</h3><div id="study-checklist"></div><div class="study-slider-container"><input type="range" min="0" max="8" value="0" id="study-slider"><div class="slider-output"><span id="study-hours-display">0 시간</span> / <span id="study-points-display">+0</span></div></div>`;
-        studyCard.querySelector('#study-checklist').innerHTML = checklistData.study.items.map(item => createChecklistItemHTML(item)).join('');
-        
-        const routineCard = document.getElementById('routine-card');
-        routineCard.innerHTML = `<h3>${checklistData.routines.title}</h3><div id="routine-checklist"></div>`;
-        const routineChecklistContainer = routineCard.querySelector('#routine-checklist');
-        
-        // 일기 항목 별도 생성
-        const journalItemHTML = createChecklistItemHTML({id: 'daily_journal', text: '일기 적기', points: 3});
-        routineChecklistContainer.innerHTML += journalItemHTML;
-        
-        // 나머지 루틴 항목 추가
-        routineChecklistContainer.innerHTML += checklistData.routines.items.map(item => createChecklistItemHTML(item)).join('');
+        const routineItemsHTML = checklistData.routines.items.map(item => createBlockItemHTML(item)).join('');
+        document.getElementById('routine-card').innerHTML = `<h3>데일리 루틴</h3>
+            <div class="journal-wrapper">
+                <button id="journal-toggle-button">일기 적기<span class="points">+3</span></button>
+                <textarea id="journal-textarea"></textarea>
+            </div>
+            <div class="horizontal-blocks" style="margin-top: 10px;">${routineItemsHTML}</div>`;
         
         addEventListeners();
     }
     
-    function createChecklistItemHTML(item) {
-        return `<div class="checklist-item" id="item-${item.id}">
-            <label>
-                <input type="checkbox" id="${item.id}" data-points="${item.points}">
-                <span>${item.text}</span>
-            </label>
-            <span class="points points-positive">+${item.points}</span>
-        </div>`;
-    }
-
     function addEventListeners() {
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-            cb.addEventListener('change', (e) => {
+            cb.addEventListener('change', () => {
                 const data = getStoredData(getDateString(selectedDate));
                 data.checkedItems[cb.id] = cb.checked;
                 localStorage.setItem(getDateString(selectedDate), JSON.stringify(data));
-                document.getElementById(`item-${cb.id}`).classList.toggle('checked', cb.checked);
                 updateScore();
             });
-        });
-
-        // 일기장 항목 클릭 이벤트 (모달 열기)
-        document.getElementById('item-daily_journal').addEventListener('click', (e) => {
-            e.preventDefault();
-            openJournalModal();
-        });
-
-        document.getElementById('study-slider').addEventListener('input', () => {
-            const slider = document.getElementById('study-slider');
-            const hours = slider.value;
-            document.getElementById('study-hours-display').textContent = `${hours} 시간`;
-            let currentStudyPoints = 0;
-            for (let i = 1; i <= hours; i++) { currentStudyPoints += checklistData.study.slider.points[i]; }
-            document.getElementById('study-points-display').textContent = `+${currentStudyPoints}`;
-            
-            const data = getStoredData(getDateString(selectedDate));
-            data.studyHours = parseInt(hours);
-            localStorage.setItem(getDateString(selectedDate), JSON.stringify(data));
-            updateScore();
         });
         
         const mainExerciseBtn = document.getElementById('exercise-main-button');
         const choicesContainer = document.getElementById('exercise-choices');
-        
         mainExerciseBtn.addEventListener('click', () => {
             const data = getStoredData(getDateString(selectedDate));
             data.exerciseChecked = !data.exerciseChecked;
@@ -189,7 +161,6 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(getDateString(selectedDate), JSON.stringify(data));
             loadStateForDate(getDateString(selectedDate));
         });
-
         choicesContainer.querySelectorAll('button').forEach(btn => {
             btn.addEventListener('click', () => {
                 const data = getStoredData(getDateString(selectedDate));
@@ -198,103 +169,149 @@ document.addEventListener('DOMContentLoaded', function() {
                 const index = data.exerciseChoices.indexOf(part);
                 if (index > -1) { data.exerciseChoices.splice(index, 1); } 
                 else { data.exerciseChoices.push(part); }
+                data.exerciseChecked = data.exerciseChoices.length > 0;
                 localStorage.setItem(getDateString(selectedDate), JSON.stringify(data));
                 loadStateForDate(getDateString(selectedDate));
             });
         });
-    }
 
-    function renderCalendar() { /* ... 이전과 동일 ... */ }
-    function renderCalendarScores() { /* ... 이전과 동일 ... */ }
-    
-    // 6. 앱 초기화
-    function initializeApp() {
-        currentDateEl.textContent = formatDate(selectedDate);
-        createElements();
-        renderCalendar();
-        loadStateForDate(getDateString(selectedDate));
-        
-        document.getElementById('prev-month').addEventListener('click', () => {
-            displayDate.setMonth(displayDate.getMonth() - 1);
-            renderCalendar();
+        const journalButton = document.getElementById('journal-toggle-button');
+        const journalTextarea = document.getElementById('journal-textarea');
+        journalButton.addEventListener('click', () => {
+            const data = getStoredData(getDateString(selectedDate));
+            data.checkedItems.daily_journal = !data.checkedItems.daily_journal;
+            localStorage.setItem(getDateString(selectedDate), JSON.stringify(data));
+            loadStateForDate(getDateString(selectedDate));
+        });
+        journalTextarea.addEventListener('input', () => {
+            const data = getStoredData(getDateString(selectedDate));
+            data.journalMemo = journalTextarea.value;
+            localStorage.setItem(getDateString(selectedDate), JSON.stringify(data));
         });
 
-        document.getElementById('next-month').addEventListener('click', () => {
-            displayDate.setMonth(displayDate.getMonth() + 1);
-            renderCalendar();
-        });
-
-        // 일기장 모달 버튼 이벤트
-        document.getElementById('save-journal').addEventListener('click', () => {
-            const dateString = getDateString(selectedDate);
-            const data = getStoredData(dateString);
-
-            data.journalMemo = journalMemo.value;
-            const isJournalWritten = journalMemo.value.trim() !== '';
-            data.checkedItems['daily_journal'] = isJournalWritten;
-            
-            localStorage.setItem(dateString, JSON.stringify(data));
-            
-            const journalCheckbox = document.getElementById('daily_journal');
-            if(journalCheckbox) {
-                journalCheckbox.checked = isJournalWritten;
-                document.getElementById('item-daily_journal').classList.toggle('checked', isJournalWritten);
-            }
-            
+        const studySlider = document.getElementById('study-slider');
+        studySlider.addEventListener('input', () => {
+            const data = getStoredData(getDateString(selectedDate));
+            const hours = parseFloat(studySlider.value) / 2;
+            data.studyHours = hours;
+            localStorage.setItem(getDateString(selectedDate), JSON.stringify(data));
+            updateStudySliderDisplay(hours);
             updateScore();
-            closeJournalModal();
         });
-
-        document.getElementById('cancel-journal').addEventListener('click', closeJournalModal);
     }
 
-    initializeApp();
+    function updateStudySliderDisplay(hours) {
+        const hoursDisplay = document.getElementById('study-hours-display');
+        const pointsDisplay = document.getElementById('study-points-display');
+        const points = Math.round(hours * 3);
+        hoursDisplay.textContent = `${hours.toFixed(1)} 시간`;
+        pointsDisplay.textContent = `+${points}`;
+    }
 
-    // renderCalendar와 renderCalendarScores 함수를 여기에 복사합니다 (이전 답변과 동일).
+    function renderCalendarScores() {
+        document.querySelectorAll('.day[data-date]').forEach(dayEl => {
+            const dateString = dayEl.dataset.date;
+            const data = getStoredData(dateString);
+            const scoreEl = dayEl.querySelector('.score');
+            
+            const hasChecklistActivity = Object.values(data.checkedItems).some(v => v === true);
+            const isRecorded = data.score !== STARTING_SCORE || data.exerciseChecked || hasChecklistActivity || data.studyHours > 0;
+
+            if (isRecorded) {
+                scoreEl.textContent = data.score;
+                dayEl.style.backgroundColor = getScoreColor(data.score);
+                dayEl.classList.add('has-score');
+            } else {
+                scoreEl.textContent = '';
+                dayEl.style.backgroundColor = '';
+                dayEl.classList.remove('has-score');
+            }
+        });
+    }
+    
+    function getAverageScore(startDate, endDate) {
+        let totalScore = 0; let count = 0; let currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+            const data = getStoredData(getDateString(currentDate));
+            const hasChecklistActivity = Object.values(data.checkedItems).some(v => v === true);
+            const isRecorded = data.score !== STARTING_SCORE || data.exerciseChecked || hasChecklistActivity || data.studyHours > 0;
+            if (isRecorded) { totalScore += data.score; count++; }
+            currentDate.setDate(currentDate.getDate() + 1);
+        } return count > 0 ? Math.round(totalScore / count) : null;
+    }
+
+    function getLast7DaysScores() {
+        const scores = []; const labels = []; let currentDate = new Date(selectedDate);
+        currentDate.setDate(currentDate.getDate() - 6);
+        for (let i = 0; i < 7; i++) {
+            const data = getStoredData(getDateString(currentDate)); 
+            const hasChecklistActivity = Object.values(data.checkedItems).some(v => v === true);
+            const isRecorded = data.score !== STARTING_SCORE || data.exerciseChecked || hasChecklistActivity || data.studyHours > 0;
+            scores.push(isRecorded ? data.score : STARTING_SCORE);
+            labels.push(`${currentDate.getMonth() + 1}/${currentDate.getDate()}`);
+            currentDate.setDate(currentDate.getDate() + 1);
+        } return { scores, labels };
+    }
+
+    function updateAnalytics() {
+        const today = new Date(selectedDate); const currentScore = getStoredData(getDateString(today)).score;
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const monthlyAvg = getAverageScore(monthStart, monthEnd);
+        const monthlyCompEl = document.getElementById('monthly-avg-comp');
+        if (monthlyAvg !== null) { const diff = currentScore - monthlyAvg; monthlyCompEl.innerHTML = `이번 달 평균(${monthlyAvg}점)보다 <strong class="${diff >= 0 ? 'positive' : 'negative'}">${Math.abs(diff)}점 ${diff >= 0 ? '높아요' : '낮아요'}</strong>`;
+        } else { monthlyCompEl.textContent = '이번 달 평균 데이터 부족'; }
+        const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay() - 6);
+        const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 6);
+        const weeklyAvg = getAverageScore(weekStart, weekEnd);
+        const weeklyCompEl = document.getElementById('weekly-avg-comp');
+        if (weeklyAvg !== null) { const diff = currentScore - weeklyAvg; weeklyCompEl.innerHTML = `지난주 평균(${weeklyAvg}점)보다 <strong class="${diff >= 0 ? 'positive' : 'negative'}">${Math.abs(diff)}점 ${diff >= 0 ? '높아요' : '낮아요'}</strong>`;
+        } else { weeklyCompEl.textContent = '지난주 평균 데이터 부족'; }
+        const { scores, labels } = getLast7DaysScores();
+        const ctx = document.getElementById('score-chart').getContext('2d');
+        const avg7days = scores.reduce((a, b) => a + b, 0) / scores.length;
+        const pointColors = scores.map((score, index) => {
+            if (index === 6) { return score >= avg7days ? 'rgba(46, 204, 113, 1)' : 'rgba(231, 76, 60, 1)'; }
+            return 'rgba(74, 144, 226, 0.8)';
+        });
+        if (scoreChart) { scoreChart.destroy(); }
+        scoreChart = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{
+            label: '최근 7일 점수', data: scores, borderColor: 'rgba(74, 144, 226, 0.5)', backgroundColor: 'rgba(74, 144, 226, 0.1)',
+            pointBackgroundColor: pointColors, pointBorderColor: pointColors, pointRadius: 4, pointHoverRadius: 6, tension: 0.2, fill: true,
+        }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false, min: 0, max: 100 } } } });
+    }
+
     function renderCalendar() {
         const year = displayDate.getFullYear(), month = displayDate.getMonth();
-        monthYearDisplay.textContent = formatMonthYear(displayDate);
-        calendarEl.innerHTML = '';
+        monthYearDisplay.textContent = formatMonthYear(displayDate); calendarEl.innerHTML = '';
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const firstDayOfMonth = new Date(year, month, 1).getDay();
-
-        ['일','월','화','수','목','금','토'].forEach(name => {
-            const dayNameEl = document.createElement('div'); dayNameEl.className = 'day-name'; dayNameEl.textContent = name; calendarEl.appendChild(dayNameEl);
-        });
+        ['일','월','화','수','목','금','토'].forEach(name => { const dayNameEl = document.createElement('div'); dayNameEl.className = 'day-name'; dayNameEl.textContent = name; calendarEl.appendChild(dayNameEl); });
         for (let i = 0; i < firstDayOfMonth; i++) calendarEl.appendChild(document.createElement('div'));
         for (let i = 1; i <= daysInMonth; i++) {
-            const dayEl = document.createElement('div');
-            const dayDate = new Date(year, month, i);
-            const dateString = getDateString(dayDate);
-            dayEl.className = 'day';
-            dayEl.dataset.date = dateString;
+            const dayEl = document.createElement('div'); const dayDate = new Date(year, month, i);
+            const dateString = getDateString(dayDate); dayEl.className = 'day'; dayEl.dataset.date = dateString;
             dayEl.innerHTML = `<span class="date-num">${i}</span><span class="score"></span>`;
             if (dateString === getDateString(selectedDate)) dayEl.classList.add('selected');
             if (dateString === getDateString(new Date())) dayEl.classList.add('today');
-            dayEl.addEventListener('click', () => {
-                selectedDate = dayDate;
-                currentDateEl.textContent = formatDate(selectedDate);
+            dayEl.addEventListener('click', () => { selectedDate = dayDate; currentDateEl.textContent = formatDate(selectedDate);
                 document.querySelectorAll('.day.selected').forEach(d => d.classList.remove('selected'));
-                dayEl.classList.add('selected');
-                loadStateForDate(dateString);
+                dayEl.classList.add('selected'); loadStateForDate(dateString);
             });
             calendarEl.appendChild(dayEl);
         }
         renderCalendarScores();
     }
-    
-    function renderCalendarScores() {
-         document.querySelectorAll('.day[data-date]').forEach(dayEl => {
-            const dateString = dayEl.dataset.date;
-            const data = getStoredData(dateString);
-            if(data.score !== STARTING_SCORE || data.exerciseChecked || (data.checkedItems && data.checkedItems.daily_journal)){
-                const scoreEl = dayEl.querySelector('.score');
-                scoreEl.textContent = data.score;
-                scoreEl.style.color = getScoreColor(data.score);
-            } else {
-                 const scoreEl = dayEl.querySelector('.score');
-                 scoreEl.textContent = '';
-            }
-        });
+
+    function initializeApp() {
+        currentDateEl.textContent = formatDate(selectedDate);
+        createElements();
+        renderCalendar();
+        loadStateForDate(getDateString(selectedDate));
+        document.getElementById('prev-month').addEventListener('click', () => { displayDate.setMonth(displayDate.getMonth() - 1); renderCalendar(); });
+        document.getElementById('next-month').addEventListener('click', () => { displayDate.setMonth(displayDate.getMonth() + 1); renderCalendar(); });
+        updateAnalytics();
     }
+
+    initializeApp();
 });
