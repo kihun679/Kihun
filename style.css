@@ -53,9 +53,10 @@ body { font-family: var(--font-family); background-color: var(--bg-color); color
 .points-negative { background-color: var(--accent-red); }
 .block-item input[type="checkbox"]:checked + label { border-color: var(--primary-color); background-color: #f0f8ff; }
 .block-item input[type="checkbox"]:checked + label .item-text { color: var(--primary-color); }
-#health-card .horizontal-blocks, #dopamine-card .horizontal-blocks, #routine-card .horizontal-blocks { grid-template-columns: repeat(4, 1fr); }
-#health-card .block-item label, #dopamine-card .block-item label, #routine-card .block-item label { flex-direction: column; justify-content: center; min-height: 60px; }
-#health-card .block-item .item-points, #dopamine-card .block-item .item-points, #routine-card .block-item .item-points { margin-top: 5px; }
+
+#dopamine-card .horizontal-blocks { grid-template-columns: repeat(4, 1fr); }
+#dopamine-card .block-item label { flex-direction: column; justify-content: center; min-height: 60px; }
+#dopamine-card .block-item .item-points { margin-top: 5px; }
 
 
 #exercise-main-button { width: 100%; padding: 12px; font-size: 16px; font-weight: 700; border-radius: 12px; border: 2px solid var(--border-color); background-color: transparent; color: var(--text-color); cursor: pointer; transition: all 0.2s ease; }
