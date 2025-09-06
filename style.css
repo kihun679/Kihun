@@ -6,7 +6,18 @@
     --accent-green: #2ecc71; --accent-blue: #3498db; --font-family: 'Pretendard', sans-serif;
 }
 
-body { font-family: var(--font-family); background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; display: flex; justify-content: center; }
+/* 수정 후 */
+body { 
+    font-family: var(--font-family); 
+    background-color: var(--bg-color); 
+    color: var(--text-color); 
+    margin: 0; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; /* 세로 정렬을 위해 추가 */
+    align-items: center; /* 가운데 정렬을 위해 추가 */
+    justify-content: center; 
+}
 .container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 20px; }
 .card { background-color: var(--card-bg-color); border-radius: 16px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 
@@ -83,3 +94,26 @@ body { font-family: var(--font-family); background-color: var(--bg-color); color
 footer { text-align: center; margin-top: 20px; padding-bottom: 20px; }
 .app-title { font-size: 16px; font-weight: 700; color: #888; margin: 0 0 4px; }
 .watermark { font-size: 12px; color: #aaa; margin: 0; }
+
+#user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: var(--subtext-color);
+}
+
+#user-info button {
+    background-color: #f0f4f8;
+    color: var(--subtext-color);
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.hidden {
+    display: none !important;
+}

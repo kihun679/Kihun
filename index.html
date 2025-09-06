@@ -8,9 +8,17 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="auth-container card">
+        <h3>시작하기</h3>
+        <input type="email" id="email-input" placeholder="이메일">
+        <input type="password" id="password-input" placeholder="비밀번호 (6자리 이상)">
+        <button id="signup-button">회원가입</button>
+        <button id="login-button">로그인</button>
+    </div>
+
     <div class="container">
         <div class="card header">
-            <div class="month-nav">
+            <div id="user-info"></div> <div class="month-nav">
                 <button id="prev-month">&lt;</button>
                 <h1 id="month-year-display"></h1>
                 <button id="next-month">&gt;</button>
@@ -49,6 +57,6 @@
         </footer>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
